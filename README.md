@@ -26,6 +26,21 @@ The first milestone is a local Android app that can:
 - tap, type, scroll, open apps, and press back/home through approved tools,
 - record every model decision and tool execution in local logs.
 
+## Development
+
+Build the Android debug APK:
+
+```bash
+./gradlew assembleDebug
+```
+
+If building outside Android Studio, make sure either `ANDROID_HOME` is set or
+`local.properties` contains the local Android SDK path:
+
+```properties
+sdk.dir=/path/to/Android/Sdk
+```
+
 ## Reference Projects
 
 - [OpenClaw](https://github.com/openclaw/openclaw) for sessions, skills,
@@ -55,4 +70,4 @@ examples/         Provider and MCP integration examples
 
 ## Status
 
-Planning and initial scaffold.
+Initial Android scaffold with an AccessibilityService debug spike.

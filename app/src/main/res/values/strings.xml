@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">TouchPilot</string>
+    <string name="accessibility_service_description">Allows TouchPilot to observe the current screen and execute approved Android UI actions.</string>
+</resources>

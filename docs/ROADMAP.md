@@ -2,10 +2,12 @@
 
 ## Phase 0: Android Control Spike
 
-- Create native Android app shell.
-- Add AccessibilityService permission flow.
-- Serialize current UI tree.
-- Execute tap, type, scroll, back, and home.
+- [x] Create native Android app shell.
+- [x] Add AccessibilityService permission flow.
+- [x] Serialize current UI tree.
+- [x] Execute tap, type, back, and home from a debug screen.
+- [ ] Add scroll action.
+- [ ] Add local tool execution log.
 
 ## Phase 1: Agent MVP
 
