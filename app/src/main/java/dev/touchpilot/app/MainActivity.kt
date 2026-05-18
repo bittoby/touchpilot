@@ -19,11 +19,13 @@ import dev.touchpilot.app.agent.ProviderConfig
 import dev.touchpilot.app.androidcontrol.AccessibilityBridge
 import dev.touchpilot.app.memory.Skill
 import dev.touchpilot.app.memory.SkillStore
+import dev.touchpilot.app.mcp.McpHttpClient
 import dev.touchpilot.app.security.ProviderSecretStore
 import dev.touchpilot.app.security.ToolApprovalProvider
 import dev.touchpilot.app.tools.AndroidToolExecutor
 import dev.touchpilot.app.tools.ToolExecutionLog
 import dev.touchpilot.app.tools.ToolSpec
+import org.json.JSONObject
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -285,6 +287,91 @@ class MainActivity : Activity() {
             }
         }
 
+        val mcpTitle = TextView(this).apply {
+            text = "MCP Client"
+            textSize = 18f
+            setPadding(0, 36, 0, 8)
+        }
+
+        val mcpEndpointInput = EditText(this).apply {
+            hint = "MCP HTTP JSON-RPC endpoint"
+            setSingleLine(true)
+            setText(preferences.getString("mcp_endpoint", ""))
+        }
+
+        val mcpToolInput = EditText(this).apply {
+            hint = "MCP tool name"
+            setSingleLine(true)
+        }
+
+        val mcpArgsInput = EditText(this).apply {
+            hint = "MCP tool arguments JSON"
+            setSingleLine(false)
+            minLines = 2
+            setText("{}")
+        }
+
+        val mcpButtonRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+        }
+
+        val listMcpToolsButton = Button(this).apply {
+            text = "List MCP Tools"
+            setOnClickListener {
+                val endpoint = mcpEndpointInput.text.toString()
+                preferences.edit().putString("mcp_endpoint", endpoint).apply()
+                outputView.text = "Listing MCP tools..."
+                Thread {
+                    val result = runCatching {
+                        val client = McpHttpClient(endpoint)
+                        val initialized = client.initialize()
+                        val tools = client.listTools()
+                        buildString {
+                            appendLine("MCP initialized:")
+                            appendLine(initialized)
+                            appendLine()
+                            appendLine("Tools:")
+                            if (tools.isEmpty()) {
+                                appendLine("No tools returned.")
+                            } else {
+                                tools.forEach { tool ->
+                                    appendLine("- ${tool.name}: ${tool.description}")
+                                }
+                            }
+                        }
+                    }.getOrElse { error ->
+                        "MCP list failed: ${error.message}"
+                    }
+                    runOnUiThread { outputView.text = result }
+                }.start()
+            }
+        }
+
+        val callMcpToolButton = Button(this).apply {
+            text = "Call MCP Tool"
+            setOnClickListener {
+                val endpoint = mcpEndpointInput.text.toString()
+                val toolName = mcpToolInput.text.toString()
+                val argsText = mcpArgsInput.text.toString()
+                preferences.edit().putString("mcp_endpoint", endpoint).apply()
+                outputView.text = "Calling MCP tool..."
+                Thread {
+                    val result = runCatching {
+                        val client = McpHttpClient(endpoint)
+                        client.initialize()
+                        val callResult = client.callTool(toolName, JSONObject(argsText))
+                        "MCP $toolName -> ${callResult.ok}\n${callResult.message}"
+                    }.getOrElse { error ->
+                        "MCP call failed: ${error.message}"
+                    }
+                    runOnUiThread { outputView.text = result }
+                }.start()
+            }
+        }
+
+        mcpButtonRow.addView(listMcpToolsButton, rowButtonParams())
+        mcpButtonRow.addView(callMcpToolButton, rowButtonParams())
+
         outputView = TextView(this).apply {
             text = "Enable TouchPilot Control, then observe a screen."
             textSize = 13f
@@ -332,6 +419,11 @@ class MainActivity : Activity() {
         root.addView(skillSpinner)
         root.addView(taskInput)
         root.addView(runAgentButton)
+        root.addView(mcpTitle)
+        root.addView(mcpEndpointInput)
+        root.addView(mcpButtonRow)
+        root.addView(mcpToolInput)
+        root.addView(mcpArgsInput)
         root.addView(outputView)
         root.addView(executionLogTitle)
         root.addView(exportTraceButton)

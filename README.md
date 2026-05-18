@@ -96,3 +96,5 @@ manual approval for medium/high-risk tools, Keystore-backed API key storage,
 basic tool argument validation, and Phase 2 reliability features for stable
 selectors, action retries, post-action verification, debug trace export, and
 Phase 3 Markdown skills with prompt loading and per-skill tool allowlists.
+Phase 4 adds an in-app MCP HTTP JSON-RPC client for initializing external MCP
+servers, listing tools, and calling tools with JSON arguments.

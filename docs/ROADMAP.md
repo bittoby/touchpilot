@@ -39,9 +39,9 @@
 
 ## Phase 4: MCP
 
-- Add MCP client support.
-- Optionally expose Android tools as an MCP server.
-- Provide examples for desktop agents calling TouchPilot.
+- [x] Add MCP client support.
+- [ ] Optionally expose Android tools as an MCP server.
+- [x] Provide examples for desktop agents calling TouchPilot.
 
 ## Phase 5: Local Inference
 

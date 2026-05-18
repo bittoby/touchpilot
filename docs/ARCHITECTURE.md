@@ -11,6 +11,10 @@ User
   -> Tool Router
   -> Android Tool Layer
   -> Accessibility / Intents / Storage / Notifications
+
+MCP Client
+  -> HTTP JSON-RPC MCP Server
+  -> External tools
 ```
 
 ## Core Modules
@@ -21,6 +25,7 @@ User
 - `androidcontrol`: AccessibilityService integration and action execution.
 - `memory`: local sessions, tool logs, skills, and audit storage.
 - `security`: approvals, policy checks, risk classification, secret storage.
+- `mcp`: HTTP JSON-RPC client for external MCP tool servers.
 
 ## Execution Loop
 
