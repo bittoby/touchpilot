@@ -75,7 +75,7 @@ tools, expose maintainable project workflow, and provide a real product UI.
 - [x] Validate debug trace export.
 - [x] Fix bugs found during live testing.
 
-See [Live Validation](LIVE_VALIDATION.md) for the Phase 6 checklist, commands,
+See [Live Testing](LIVE_TESTING.md) for the Phase 6 checklist, commands,
 and current live-test results.
 
 ## Phase 7: Repo Quality and Workflow
