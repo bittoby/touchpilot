@@ -92,3 +92,6 @@ skills/           Markdown skills for task-specific behavior
 docs/             Architecture, security, and tool documentation
 examples/         Provider and MCP integration examples
 ```
+
+## Community
+https://discord.gg/TvXwsNbx
