@@ -227,6 +227,7 @@ class MainActivity : Activity() {
             skillTitle = { selectedSkill()?.title ?: "No skill selected" },
             cancelAgentRun = agentRunController::cancelRun,
             openRunDetail = ::openRunDetail,
+            openSkillDetail = ::openSkillDetail,
             refreshChatScreen = { showSection(AppSection.CHAT) },
         )
     }
