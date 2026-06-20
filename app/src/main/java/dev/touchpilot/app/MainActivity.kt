@@ -51,10 +51,12 @@ import dev.touchpilot.app.ui.logs.LogsScreenRenderer
 import dev.touchpilot.app.ui.settings.SettingsScreenRenderer
 import dev.touchpilot.app.ui.settings.SkillDetailRenderer
 import dev.touchpilot.app.ui.tools.ToolsScreenRenderer
+import dev.touchpilot.app.workflow.DemonstrationMode
 import java.io.File
 
 class MainActivity : Activity() {
     private lateinit var preferences: SharedPreferences
+    private lateinit var demonstrationMode: DemonstrationMode
     private lateinit var skillRegistry: SkillRegistry
     private lateinit var toolExecutor: AndroidToolExecutor
     private lateinit var debugTraceExporter: DebugTraceExporter
@@ -78,6 +80,7 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
 
         preferences = getSharedPreferences("touchpilot", MODE_PRIVATE)
+        demonstrationMode = DemonstrationMode(preferences)
         ToolExecutionLog.configure(this)
         val skillLoad = SkillStore(this).load()
         skillRegistry = SkillRegistry(skillLoad.skills, SharedPreferencesSkillStore(preferences))
@@ -114,6 +117,7 @@ class MainActivity : Activity() {
             reasoningCore = reasoningCore,
             conversation = conversation,
             currentProviderMode = ::currentProviderMode,
+            demonstrationMode = demonstrationMode,
             runOnUiThread = { block -> runOnUiThread(block) },
             showChat = { showSection(AppSection.CHAT) },
             refreshExecutionLog = ::refreshExecutionLog,
@@ -148,7 +152,9 @@ class MainActivity : Activity() {
             activeSection = { navigationController.activeSection },
             onSectionSelected = ::showSection,
             setChatTaskInput = { chatTaskInput = it },
-            submitChatMessage = ::submitChatMessage
+            submitChatMessage = ::submitChatMessage,
+            demonstrationMode = demonstrationMode,
+            refreshUI = { showSection(navigationController.activeSection) }
         )
         val shellViews = appShellRenderer.render()
         scrollView = shellViews.scrollView

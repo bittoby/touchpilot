@@ -20,6 +20,7 @@ import dev.touchpilot.app.androidcontrol.AccessibilityBridge
 import dev.touchpilot.app.security.SensitiveTextRedactor
 import dev.touchpilot.app.security.ToolApprovalRequest
 import dev.touchpilot.app.tools.ToolExecutionLog
+import dev.touchpilot.app.workflow.DemonstrationMode
 import dev.touchpilot.app.workflow.WorkflowTrace
 import dev.touchpilot.app.workflow.WorkflowTraceStore
 import dev.touchpilot.app.ui.chat.ApprovalState
@@ -32,6 +33,7 @@ class AgentRunController(
     private val reasoningCore: LocalReasoningCore,
     private val conversation: MutableList<ChatEvent>,
     private val currentProviderMode: () -> AgentProviderMode,
+    private val demonstrationMode: DemonstrationMode,
     private val runtimeWorkingDetail: () -> String,
     private val runOnUiThread: (() -> Unit) -> Unit,
     private val showChat: () -> Unit,
@@ -354,6 +356,9 @@ class AgentRunController(
      * Captures a successful run as a reusable [WorkflowTrace] (issue #289).
      * Non-successful runs (errors, blocks, no tool actions) yield no trace, so
      * this is a no-op for them. The trace stays in-memory for the session.
+     *
+     * When demonstration mode is enabled (issue #308), traces are captured and
+     * a visible confirmation is shown to the user.
      */
     private fun captureWorkflowTrace(record: AgentRunRecord) {
         val trace = WorkflowTrace.from(record) ?: return
@@ -366,10 +371,14 @@ class AgentRunController(
             source = currentProviderMode().toLogSource(),
             details = recorded.toJson(redactSensitive = true).toString(),
         )
-        conversation += ChatEvent.Agent(
-            "Workflow captured.",
-            "${trace.steps.size} step(s) recorded — this run can be saved as a workflow.",
-        )
+        
+        // Only show capture notification when demonstration mode is active (issue #308).
+        if (demonstrationMode.isEnabled()) {
+            conversation += ChatEvent.Agent(
+                "Demonstration recorded.",
+                "${trace.steps.size} step(s) captured — this run can be saved as a skill.",
+            )
+        }
     }
 
     private fun setRunState(state: AgentRunState) {

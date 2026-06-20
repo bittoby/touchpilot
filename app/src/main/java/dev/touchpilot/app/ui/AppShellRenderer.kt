@@ -17,6 +17,7 @@ import dev.touchpilot.app.R
 import dev.touchpilot.app.navigation.AppSection
 import dev.touchpilot.app.ui.TouchPilotTheme as Theme
 import dev.touchpilot.app.ui.chat.ChatInputBarRenderer
+import dev.touchpilot.app.workflow.DemonstrationMode
 
 data class AppShellViews(
     val root: View,
@@ -32,10 +33,13 @@ class AppShellRenderer(
     private val activeSection: () -> AppSection,
     private val onSectionSelected: (AppSection) -> Unit,
     private val setChatTaskInput: (EditText) -> Unit,
-    private val submitChatMessage: () -> Unit
+    private val submitChatMessage: () -> Unit,
+    private val demonstrationMode: DemonstrationMode,
+    private val refreshUI: () -> Unit
 ) {
     private var bottomNav: TabLayout? = null
     private var pageTitleView: TextView? = null
+    private var demonstrationIndicator: View? = null
 
     fun updatePageTitle(title: String) {
         pageTitleView?.text = title
@@ -175,6 +179,10 @@ class AppShellRenderer(
                 }
             )
 
+            // Demonstration mode toggle (issue #308)
+            demonstrationIndicator = buildDemonstrationToggle()
+            row.addView(demonstrationIndicator)
+
             addView(row)
 
             statusView = TextView(activity).apply {
@@ -251,6 +259,85 @@ class AppShellRenderer(
             }
         )
         return column
+    }
+
+    /**
+     * Builds a demonstration recording mode toggle button (issue #308).
+     * Shows a red recording dot when enabled, gray when disabled.
+     * Clicking the button toggles the mode and refreshes the UI.
+     */
+    private fun buildDemonstrationToggle(): View {
+        val container = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(16, 0, 0, 0)
+            isClickable = true
+            isFocusable = true
+            setOnClickListener {
+                demonstrationMode.setEnabled(!demonstrationMode.isEnabled())
+                refreshUI()
+            }
+        }
+
+        val isRecording = demonstrationMode.isEnabled()
+        val dotColor = if (isRecording) Color.rgb(239, 68, 68) else Color.rgb(100, 116, 139)
+
+        // Recording dot indicator
+        container.addView(
+            View(activity).apply {
+                layoutParams = LinearLayout.LayoutParams(12, 12).apply {
+                    setMargins(0, 0, 8, 0)
+                }
+                background = rounded(dotColor, 6, dotColor)
+            }
+        )
+
+        // Label
+        container.addView(
+            TextView(activity).apply {
+                text = if (isRecording) "Recording" else "Demo"
+                textSize = 11f
+                typeface = if (isRecording) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+                setTextColor(if (isRecording) Color.rgb(239, 68, 68) else Color.rgb(150, 164, 178))
+            }
+        )
+
+        // Animate the dot when recording
+        if (isRecording) {
+            val dot = container.getChildAt(0)
+            animateRecordingDot(dot)
+        }
+
+        return container
+    }
+
+    /**
+     * Animates the recording dot with a pulsing opacity effect.
+     */
+    private fun animateRecordingDot(dot: View) {
+        var step = 0
+        val intervalMs = 800L
+        val runner = object : Runnable {
+            override fun run() {
+                val phase = (step % 2)
+                dot.alpha = if (phase == 0) 1.0f else 0.3f
+                step++
+                dot.postDelayed(this, intervalMs)
+            }
+        }
+        dot.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) {
+                v.removeCallbacks(runner)
+                v.post(runner)
+            }
+            override fun onViewDetachedFromWindow(v: View) {
+                v.removeCallbacks(runner)
+            }
+        })
+        if (dot.isAttachedToWindow) {
+            dot.removeCallbacks(runner)
+            dot.post(runner)
+        }
     }
 
     private data class HeaderViews(
